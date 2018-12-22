@@ -7,7 +7,6 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using WebApplication1.Models;
-using System.IO;
 
 namespace WebApplication1.Controllers
 {
@@ -15,46 +14,45 @@ namespace WebApplication1.Controllers
     {
         private PictureDBContext db = new PictureDBContext();
 
-
-
         // GET: Pictures
         public ActionResult Index()
         {
             return View(db.Pictures.ToList());
         }
 
+        public ActionResult FileUpload(HttpPostedFileBase file)
+        {
 
+            if (file != null)
+            {
+                string ImageName = System.IO.Path.GetFileName(file.FileName);
+                string physicalPath = Server.MapPath("~/images/" + ImageName);
 
-        // GET: Pictures/Create
-        public ActionResult Create()
+                // save image in folder
+                file.SaveAs(physicalPath);
+
+                //save new record in database
+                Picture newRecord = new Picture();
+                newRecord.Alt = Request.Form["alt"];
+                newRecord.Link = ImageName;
+                db.Pictures.Add(newRecord);
+                db.SaveChanges();
+
+            }
+            //Display records
+            return RedirectToAction("../Pictures/Display/");
+        }
+
+        public ActionResult Display()
         {
             return View();
         }
+    
 
-        [HttpPost]
-        public ActionResult Create(Picture pic, HttpPostedFileBase uploadImage)
-        {
-            if (ModelState.IsValid && uploadImage != null)
-            {
-                byte[] imageData = null;
-                // считываем переданный файл в массив байтов
-                using (var binaryReader = new BinaryReader(uploadImage.InputStream))
-                {
-                    imageData = binaryReader.ReadBytes(uploadImage.ContentLength);
-                }
-                // установка массива байтов
-                pic.Image = imageData;
 
-                db.Pictures.Add(pic);
-                db.SaveChanges();
 
-                return RedirectToAction("Index");
-            }
-            return View(pic);
-        }
-
-        // GET: Pictures/Details/5
-        public ActionResult Details(int? id)
+    // GET: Pictures/Details/5
+    public ActionResult Details(int? id)
         {
             if (id == null)
             {
@@ -68,7 +66,11 @@ namespace WebApplication1.Controllers
             return View(picture);
         }
 
-
+        // GET: Pictures/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
 
         // POST: Pictures/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
