@@ -47,12 +47,12 @@ namespace WebApplication1.Controllers
         {
             return View();
         }
-    
 
 
 
-    // GET: Pictures/Details/5
-    public ActionResult Details(int? id)
+
+        // GET: Pictures/Details/5
+        public ActionResult Details(int? id)
         {
             if (id == null)
             {
